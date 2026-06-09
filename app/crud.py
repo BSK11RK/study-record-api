@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models import StudyRecord
-from app.schemas import StudyCreate, StudyUpdate
+from app.schemas import StudyCreate, StudyPatch
 
 
 def create_record(
@@ -11,6 +11,7 @@ def create_record(
         subject=study.subject,
         hours=study.hours,
         memo=study.memo,
+        study_date=study.study_date,
     )
     
     db.add(record)
@@ -24,19 +25,20 @@ def get_records(db: Session):
     return db.query(StudyRecord).all()
 
 
-def update_record(
+def patch_record(
     db: Session,
     record_id: int,
-    study: StudyUpdate,
+    study: StudyPatch,
 ):
     record = db.query(StudyRecord).filter(StudyRecord.id == record_id).first()
     
     if not record:
         return None
     
-    record.subject = study.subject
-    record.hours = study.hours
-    record.memo = study.memo
+    update_date = study.model_dump(exclude_unset=True)
+    
+    for field, value in update_date.items():
+        setattr(record, field, value)
     
     db.commit()
     db.refresh(record)

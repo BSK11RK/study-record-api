@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 
 from app.database import engine, SessionLocal
 from app.models import Base
-from app.schemas import StudyCreate, StudyResponse, StudyUpdate
-from app.crud import create_record, get_records, update_record, delete_record
+from app.schemas import StudyCreate, StudyResponse, StudyPatch
+from app.crud import create_record, get_records, patch_record, delete_record
 
 
 app = FastAPI()
@@ -40,14 +40,13 @@ def read_studies(db: Session = Depends(get_db)):
 
 
 # 更新
-@app.put("/students/{record_id}", response_model=StudyResponse)
-
+@app.patch("/studies/{record_id}", response_model=StudyResponse)
 def update_study(
     record_id: int,
-    study: StudyUpdate,
+    study: StudyPatch,
     db: Session = Depends(get_db),
 ):
-    record = update_record(db, record_id, study)
+    record = patch_record(db, record_id, study)
     
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
