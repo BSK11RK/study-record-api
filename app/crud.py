@@ -21,8 +21,23 @@ def create_record(
     return record
 
 
-def get_records(db: Session):
-    return db.query(StudyRecord).all()
+def get_records(
+    db: Session,
+    subject: str | None = None,
+):
+    query = db.query(StudyRecord)
+    
+    if subject:
+        query = query.filter(StudyRecord.subject == subject)
+        
+    return query.all()
+
+
+def get_record_by_id(
+    db: Session,
+    record_id: int,
+):
+    return db.query(StudyRecord).filter(StudyRecord.id == record_id).first()
 
 
 def patch_record(

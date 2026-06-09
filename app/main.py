@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import engine, SessionLocal
 from app.models import Base
 from app.schemas import StudyCreate, StudyResponse, StudyPatch
-from app.crud import create_record, get_records, patch_record, delete_record
+from app.crud import create_record, get_records, get_record_by_id, patch_record, delete_record
 
 
 app = FastAPI()
@@ -35,8 +35,25 @@ def add_study(
 
 # 学習記録一覧取得
 @app.get("/studies", response_model=list[StudyResponse])
-def read_studies(db: Session = Depends(get_db)):
-    return get_records(db)
+def read_studies(
+    subject: str | None = None,
+    db: Session = Depends(get_db)
+):
+    return get_records(db, subject)
+
+
+# 1件取得
+@app.get("/studies/{record_id}", response_model=StudyResponse)
+def read_study(
+    record_id: int,
+    db: Session = Depends(get_db)
+):
+    record = get_record_by_id(db, record_id)
+    
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+    
+    return record
 
 
 # 更新
