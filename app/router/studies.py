@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
+from app.auth import verify_token
 from app.schemas import StudyCreate, StudyPatch, StudyResponse
 from app.crud import (
     create_record,
@@ -43,6 +44,7 @@ def read_studies(
     subject: str | None = None,
     start_date: date | None = None,
     end_date: date | None = None,
+    current_user: str = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
     return get_records(db, subject, start_date, end_date)
@@ -64,6 +66,7 @@ def read_subject_summary(db: Session = Depends(get_db)):
 @router.get("/{record_id}", response_model=StudyResponse)
 def read_study(
     record_id: int,
+    current_user: str = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
     record = get_record_by_id(db, record_id)
@@ -79,6 +82,7 @@ def read_study(
 def update_study(
     record_id: int,
     study: StudyPatch,
+    current_user: str = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
     record = patch_record(db, record_id, study)
@@ -93,6 +97,7 @@ def update_study(
 @router.delete("/{record_id}")
 def delete_study(
     record_id: int,
+    current_user: str = Depends(verify_token),
     db: Session = Depends(get_db)
 ):
     success = delete_record(db, record_id)
