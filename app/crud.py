@@ -1,5 +1,7 @@
+from datetime import date
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+
 from app.models import StudyRecord
 from app.schemas import StudyCreate, StudyPatch
 
@@ -25,11 +27,19 @@ def create_record(
 def get_records(
     db: Session,
     subject: str | None = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
 ):
     query = db.query(StudyRecord)
     
     if subject:
         query = query.filter(StudyRecord.subject == subject)
+        
+    if start_date:
+        query = query.filter(StudyRecord.study_date >= start_date)
+        
+    if end_date:
+        query = query.filter(StudyRecord.study_date <= end_date)
         
     return query.all()
 
@@ -46,6 +56,20 @@ def get_total_hours(db: Session):
     
     return total or 0
 
+
+def get_subject_summary(db: Session):
+    rows = db.query(
+        StudyRecord.subject, 
+        func.sum(StudyRecord.hours)
+    ).group_by(
+        StudyRecord.subject
+    ).all()
+
+
+    return {
+        subject: hours
+        for subject, hours in rows
+    }
 
 def patch_record(
     db: Session,

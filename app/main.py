@@ -1,3 +1,4 @@
+from datetime import date
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -9,6 +10,7 @@ from app.crud import (
     get_records, 
     get_record_by_id, 
     get_total_hours, 
+    get_subject_summary,
     patch_record, 
     delete_record
 )
@@ -44,15 +46,23 @@ def add_study(
 @app.get("/studies", response_model=list[StudyResponse])
 def read_studies(
     subject: str | None = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
     db: Session = Depends(get_db)
 ):
-    return get_records(db, subject)
+    return get_records(db, subject, start_date, end_date)
 
 
 # 総学習時間
 @app.get("/studies/total-hours")
 def read_total_hours(db: Session = Depends(get_db)):
     return {"total_hours": get_total_hours(db)}
+
+
+# 科目別集計
+@app.get("/studies/summary")
+def read_subject_summary(db: Session = Depends(get_db)):
+    return get_subject_summary(db)
 
 
 # 1件取得
