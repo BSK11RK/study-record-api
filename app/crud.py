@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.models import StudyRecord
 from app.schemas import StudyCreate, StudyPatch
@@ -38,6 +39,12 @@ def get_record_by_id(
     record_id: int,
 ):
     return db.query(StudyRecord).filter(StudyRecord.id == record_id).first()
+
+
+def get_total_hours(db: Session):
+    total = db.query(func.sum(StudyRecord.hours)).scalar()
+    
+    return total or 0
 
 
 def patch_record(

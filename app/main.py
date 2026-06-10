@@ -4,7 +4,14 @@ from sqlalchemy.orm import Session
 from app.database import engine, SessionLocal
 from app.models import Base
 from app.schemas import StudyCreate, StudyResponse, StudyPatch
-from app.crud import create_record, get_records, get_record_by_id, patch_record, delete_record
+from app.crud import (
+    create_record, 
+    get_records, 
+    get_record_by_id, 
+    get_total_hours, 
+    patch_record, 
+    delete_record
+)
 
 
 app = FastAPI()
@@ -40,6 +47,12 @@ def read_studies(
     db: Session = Depends(get_db)
 ):
     return get_records(db, subject)
+
+
+# 総学習時間
+@app.get("/studies/total-hours")
+def read_total_hours(db: Session = Depends(get_db)):
+    return {"total_hours": get_total_hours(db)}
 
 
 # 1件取得
