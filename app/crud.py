@@ -2,10 +2,36 @@ from datetime import date
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.models import StudyRecord
+from app.models import User, StudyRecord
 from app.schemas import StudyCreate, StudyPatch
 
 
+# User
+def create_user(
+    db: Session,
+    username: str,
+    password: str,
+):
+    user = User(
+        username=username,
+        password=password,
+    )
+    
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    
+    return user
+
+
+def get_user_by_username(
+    db: Session,
+    username: str,
+):
+    return db.query(User).filter(User.username == username).first()
+
+
+# Study Record
 def create_record(
     db: Session,
     study: StudyCreate
