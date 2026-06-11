@@ -5,13 +5,19 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.auth import get_current_user
 from app.models import User
-from app.schemas import StudyCreate, StudyPatch, StudyResponse
+from app.schemas import (
+    StudyCreate, 
+    StudyPatch, 
+    StudyResponse,
+    TimelineResponse
+)
 from app.crud import (
     create_record,
     get_records,
     get_record_by_id,
     get_total_hours,
     get_subject_summary,
+    get_timeline,
     patch_record,
     delete_record
 )
@@ -74,6 +80,20 @@ def read_subject_summary(
     current_user: User = Depends(get_current_user)
 ):
     return get_subject_summary(db, current_user.id)
+
+
+# タイムライン
+@router.get("/timeline", response_model=list[TimelineResponse])
+def read_timeline(
+    db: Session = Depends(get_db),
+    user_id: int | None = None,
+    order: str = "desc"
+):
+    return get_timeline(
+        db=db,
+        user_id=user_id,
+        order=order
+    )
 
 
 # 1件取得

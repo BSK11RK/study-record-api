@@ -35,5 +35,16 @@ class StudyResponse(BaseModel):
     memo: str | None = None
     study_date: date
     
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
+        
+        
+# Timeline
+class TimelineResponse(BaseModel):
+    id: int
+    user_id: int
+    username: str
+    subject: str
+    hours: int
+    memo: str | None = None
+    
+    model_config = {"from_attributes": True}

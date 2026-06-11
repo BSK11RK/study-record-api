@@ -175,3 +175,52 @@ def delete_record(
     db.commit()
     
     return True
+
+
+def get_timeline(
+    db: Session,
+    user_id: int | None = None,
+    order: str = "desc"
+):
+    query = (
+        db.query(
+            StudyRecord,
+            User.username
+        )
+        .join(
+            User,
+            StudyRecord.user_id == User.id
+        )
+    )
+    
+    if user_id:
+        query = query.filter(
+            StudyRecord.user_id == user_id
+        )
+        
+    if order == "asc":
+        query = query.order_by(
+            StudyRecord.id.asc()
+        )
+    else:
+        query = query.order_by(
+            StudyRecord.id.desc()
+        )
+    
+    records = query.all()
+    
+    result = []
+    
+    for study, username in records:
+        result.append(
+            {
+                "id": study.id,
+                "user_id": study.user_id,
+                "username": username,
+                "subject": study.subject,
+                "hours": study.hours,
+                "memo": study.memo
+            }
+        )
+        
+    return result
