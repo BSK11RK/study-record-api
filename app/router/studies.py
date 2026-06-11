@@ -9,7 +9,8 @@ from app.schemas import (
     StudyCreate, 
     StudyPatch, 
     StudyResponse,
-    TimelineResponse
+    TimelineResponse,
+    TimelinePageResponse
 )
 from app.crud import (
     create_record,
@@ -83,16 +84,20 @@ def read_subject_summary(
 
 
 # タイムライン
-@router.get("/timeline", response_model=list[TimelineResponse])
+@router.get("/timeline", response_model=TimelinePageResponse)
 def read_timeline(
     db: Session = Depends(get_db),
     user_id: int | None = None,
-    order: str = "desc"
+    order: str = "desc",
+    page: int = 1,
+    size: int = 10,
 ):
     return get_timeline(
         db=db,
         user_id=user_id,
-        order=order
+        order=order,
+        page=page,
+        size=size
     )
 
 

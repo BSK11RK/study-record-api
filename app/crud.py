@@ -180,7 +180,9 @@ def delete_record(
 def get_timeline(
     db: Session,
     user_id: int | None = None,
-    order: str = "desc"
+    order: str = "desc",
+    page: int = 1,
+    size: int = 10,
 ):
     query = (
         db.query(
@@ -198,6 +200,8 @@ def get_timeline(
             StudyRecord.user_id == user_id
         )
         
+    total = query.count()
+        
     if order == "asc":
         query = query.order_by(
             StudyRecord.id.asc()
@@ -207,12 +211,12 @@ def get_timeline(
             StudyRecord.id.desc()
         )
     
-    records = query.all()
+    records = query.offset((page - 1) * size).limit(size).all()
     
-    result = []
+    items = []
     
     for study, username in records:
-        result.append(
+        items.append(
             {
                 "id": study.id,
                 "user_id": study.user_id,
@@ -223,4 +227,9 @@ def get_timeline(
             }
         )
         
-    return result
+    return {
+        "page": page,
+        "size": size,
+        "total": total,
+        "items": items
+    }

@@ -48,3 +48,10 @@ class TimelineResponse(BaseModel):
     memo: str | None = None
     
     model_config = {"from_attributes": True}
+    
+    
+class TimelinePageResponse(BaseModel):
+    page: int
+    size: int
+    total: int
+    items: list[TimelineResponse]
