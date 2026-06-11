@@ -11,6 +11,13 @@ class UserCreate(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str
+    
+    
+class UserProfileResponse(BaseModel):
+    id: int
+    username: str
+    total_hours: int
+    study_count: int
 
 
 # Study Record

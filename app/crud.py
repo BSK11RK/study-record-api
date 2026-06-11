@@ -31,6 +31,35 @@ def get_user_by_username(
     return db.query(User).filter(User.username == username).first()
 
 
+def get_user_profile(
+    db: Session,
+    user_id: int,
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    
+    if not user:
+        return None
+    
+    total_hours = db.query(
+        func.sum(
+            StudyRecord.hours)
+        ).filter(
+            StudyRecord.user_id == user_id
+        ).scalar()
+
+    study_count = db.query(
+        StudyRecord).filter(
+            StudyRecord.user_id == user_id
+        ).count()
+        
+    return {
+        "id": user.id,
+        "username": user.username,
+        "total_hours": total_hours or 0,
+        "study_count": study_count
+    }
+        
+
 # Study Record
 def create_record(
     db: Session,
