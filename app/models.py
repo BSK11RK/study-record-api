@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, String, Date
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import Column, Integer, String, Date, ForeignKey
+from sqlalchemy.orm import declarative_base, relationship
 
 
 Base = declarative_base()
@@ -11,6 +11,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
+    studies = relationship("StudyRecord", back_populates="user")
 
 
 class StudyRecord(Base):
@@ -21,3 +22,5 @@ class StudyRecord(Base):
     hours = Column(Integer, nullable=False)
     memo = Column(String, nullable=True)
     study_date = Column(Date, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user = relationship("User", back_populates="studies")

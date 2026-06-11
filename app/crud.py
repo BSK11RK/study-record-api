@@ -34,13 +34,15 @@ def get_user_by_username(
 # Study Record
 def create_record(
     db: Session,
-    study: StudyCreate
+    study: StudyCreate,
+    user_id: int
 ):
     record = StudyRecord(
         subject=study.subject,
         hours=study.hours,
         memo=study.memo,
         study_date=study.study_date,
+        user_id=user_id
     )
     
     db.add(record)
@@ -52,11 +54,12 @@ def create_record(
 
 def get_records(
     db: Session,
+    user_id: int,
     subject: str | None = None,
     start_date: date | None = None,
     end_date: date | None = None,
 ):
-    query = db.query(StudyRecord)
+    query = db.query(StudyRecord).filter(StudyRecord.user_id == user_id)
     
     if subject:
         query = query.filter(StudyRecord.subject == subject)
@@ -73,23 +76,48 @@ def get_records(
 def get_record_by_id(
     db: Session,
     record_id: int,
+    user_id: int
 ):
-    return db.query(StudyRecord).filter(StudyRecord.id == record_id).first()
+    return db.query(StudyRecord).filter(
+        StudyRecord.id == record_id,
+        StudyRecord.user_id == user_id
+    ).first()
 
 
-def get_total_hours(db: Session):
-    total = db.query(func.sum(StudyRecord.hours)).scalar()
+def get_total_hours(
+    db: Session, 
+    user_id: int
+):
+    total = (
+        db.query(
+            func.sum(StudyRecord.hours)
+        )
+        .filter(
+            StudyRecord.user_id == user_id
+        )
+        .scalar()
+    )
     
     return total or 0
 
 
-def get_subject_summary(db: Session):
-    rows = db.query(
-        StudyRecord.subject, 
-        func.sum(StudyRecord.hours)
-    ).group_by(
-        StudyRecord.subject
-    ).all()
+def get_subject_summary(
+    db: Session,
+    user_id: int
+):
+    rows = (
+        db.query(
+            StudyRecord.subject,
+            func.sum(StudyRecord.hours)
+        )
+        .filter(
+            StudyRecord.user_id == user_id
+        )
+        .group_by(
+            StudyRecord.subject
+        )
+        .all()
+    )
 
 
     return {
@@ -100,16 +128,24 @@ def get_subject_summary(db: Session):
 def patch_record(
     db: Session,
     record_id: int,
-    study: StudyPatch,
+    user_id: int,
+    study: StudyPatch
 ):
-    record = db.query(StudyRecord).filter(StudyRecord.id == record_id).first()
+    record = (
+        db.query(StudyRecord)
+        .filter(
+            StudyRecord.id == record_id,
+            StudyRecord.user_id == user_id
+        )
+        .first()
+    )
     
     if not record:
         return None
     
-    update_date = study.model_dump(exclude_unset=True)
+    update_data = study.model_dump(exclude_unset=True)
     
-    for field, value in update_date.items():
+    for field, value in update_data.items():
         setattr(record, field, value)
     
     db.commit()
@@ -119,10 +155,18 @@ def patch_record(
 
 
 def delete_record(
-    db: Session,
-    record_id: int,
+    db: Session, 
+    record_id: int, 
+    user_id: int
 ):
-    record = db.query(StudyRecord).filter(StudyRecord.id == record_id).first()
+    record = (
+        db.query(StudyRecord)
+        .filter(
+            StudyRecord.id == record_id,
+            StudyRecord.user_id == user_id
+        )
+        .first()
+    )
     
     if not record:
         return False

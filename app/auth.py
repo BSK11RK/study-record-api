@@ -5,6 +5,9 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
+from app.database import SessionLocal
+from app.crud import get_user_by_username
+
 
 SECRET_KEY = "your-secret-key"
 ALGORITHM = "HS256"
@@ -58,3 +61,20 @@ def verify_token(token: str = Depends(oauth2_scheme)):
     
     except JWTError:
         raise credentials_exception
+    
+    
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    username = verify_token(token)
+    
+    db = SessionLocal()
+    
+    try:
+        user = get_user_by_username(db, username)
+        
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        return user
+    
+    finally:
+        db.close()

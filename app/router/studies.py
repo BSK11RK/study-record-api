@@ -3,7 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
-from app.auth import verify_token
+from app.auth import get_current_user
+from app.models import User
 from app.schemas import StudyCreate, StudyPatch, StudyResponse
 from app.crud import (
     create_record,
@@ -33,9 +34,10 @@ def get_db():
 @router.post("", response_model=StudyResponse)
 def add_study(
     study: StudyCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    return create_record(db, study)
+    return create_record(db, study, current_user.id)
 
 
 # 学習記録一覧取得
@@ -44,32 +46,44 @@ def read_studies(
     subject: str | None = None,
     start_date: date | None = None,
     end_date: date | None = None,
-    current_user: str = Depends(verify_token),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    return get_records(db, subject, start_date, end_date)
+    return get_records(
+        db, 
+        current_user.id, 
+        subject, 
+        start_date, 
+        end_date
+    )
 
 
 # 総学習時間
 @router.get("/total-hours")
-def read_total_hours(db: Session = Depends(get_db)):
-    return {"total_hours": get_total_hours(db)}
+def read_total_hours(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return {"total_hours": get_total_hours(db, current_user.id)}
 
 
 # 科目別集計
 @router.get("/summary")
-def read_subject_summary(db: Session = Depends(get_db)):
-    return get_subject_summary(db)
+def read_subject_summary(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return get_subject_summary(db, current_user.id)
 
 
 # 1件取得
 @router.get("/{record_id}", response_model=StudyResponse)
 def read_study(
     record_id: int,
-    current_user: str = Depends(verify_token),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    record = get_record_by_id(db, record_id)
+    record = get_record_by_id(db, record_id, current_user.id)
     
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
@@ -82,10 +96,10 @@ def read_study(
 def update_study(
     record_id: int,
     study: StudyPatch,
-    current_user: str = Depends(verify_token),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    record = patch_record(db, record_id, study)
+    record = patch_record(db, record_id, current_user.id, study)
     
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
@@ -97,12 +111,12 @@ def update_study(
 @router.delete("/{record_id}")
 def delete_study(
     record_id: int,
-    current_user: str = Depends(verify_token),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    success = delete_record(db, record_id)
+    success = delete_record(db, record_id, current_user.id)
     
     if not success:
         raise HTTPException(status_code=404, detail="Record not found")
     
-    return {"message": "Deleted"}
+    return {"message": "deleted"}

@@ -34,7 +34,7 @@ def register(
     
     create_user(db, user.username, hashed_password)
     
-    return {"message": "User created"}
+    return {"message": "user created"}
 
 
 @router.post("/login", response_model=TokenResponse)
