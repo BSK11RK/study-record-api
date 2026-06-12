@@ -266,7 +266,8 @@ def get_timeline(
                 "username": username,
                 "subject": study.subject,
                 "hours": study.hours,
-                "memo": study.memo
+                "memo": study.memo,
+                "created_at": study.created_at
             }
         )
         
@@ -394,7 +395,8 @@ def get_following_timeline(
                 "username": username,
                 "subject": study.subject,
                 "hours": study.hours,
-                "memo": study.memo
+                "memo": study.memo,
+                "created_at": study.created_at
             }
         )
         

@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship
 
 
@@ -30,5 +31,6 @@ class StudyRecord(Base):
     hours = Column(Integer, nullable=False)
     memo = Column(String, nullable=True)
     study_date = Column(Date, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     user = relationship("User", back_populates="studies")

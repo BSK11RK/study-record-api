@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from pydantic import BaseModel
 
 
@@ -51,6 +51,7 @@ class StudyResponse(BaseModel):
     hours: int
     memo: str | None = None
     study_date: date
+    created_at: datetime | None = None
     
     model_config = {"from_attributes": True}
         
@@ -63,6 +64,7 @@ class TimelineResponse(BaseModel):
     subject: str
     hours: int
     memo: str | None = None
+    created_at: datetime | None = None
     
     model_config = {"from_attributes": True}
     
