@@ -2,7 +2,7 @@ from datetime import date
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.models import User, StudyRecord
+from app.models import User, Follow, StudyRecord
 from app.schemas import StudyCreate, StudyPatch
 
 
@@ -239,6 +239,134 @@ def get_timeline(
         query = query.order_by(
             StudyRecord.id.desc()
         )
+    
+    records = query.offset((page - 1) * size).limit(size).all()
+    
+    items = []
+    
+    for study, username in records:
+        items.append(
+            {
+                "id": study.id,
+                "user_id": study.user_id,
+                "username": username,
+                "subject": study.subject,
+                "hours": study.hours,
+                "memo": study.memo
+            }
+        )
+        
+    return {
+        "page": page,
+        "size": size,
+        "total": total,
+        "items": items
+    }
+    
+
+# Follow   
+def follow_user(
+    db: Session,
+    follower_id: int,
+    following_id: int
+):
+    if follower_id == following_id:
+        return None
+    
+    exists = db.query(Follow).filter(
+        Follow.follower_id == follower_id,
+        Follow.following_id == following_id
+    ).first()
+    
+    
+    if exists:
+        return exists
+    
+    follw = Follow(
+        follower_id=follower_id,
+        following_id=following_id
+    )
+    
+    db.add(follw)
+    db.commit()
+    db.refresh(follw)
+    
+    return follw
+
+
+def unfollow_user(
+    db: Session,
+    follower_id: int,
+    following_id: int
+):
+    follow = db.query(Follow).filter(
+        Follow.follower_id == follower_id,
+        Follow.following_id == following_id
+    ).first()
+    
+    if not follow:
+        return False
+    
+    db.delete(follow)
+    db.commit()
+    
+    return True
+
+
+def get_followers(
+    db: Session,
+    user_id: int
+):
+    rows = db.query(User).join(
+        Follow,
+        Follow.follower_id == User.id
+    ).filter(
+        Follow.follower_id == user_id
+    ).all()
+    
+    return rows
+
+
+def get_following(
+    db: Session,
+    user_id: int
+):
+    rows = db.query(User).join(
+        Follow,
+        Follow.following_id == User.id
+    ).filter(
+        Follow.follower_id == user_id
+    ).all()
+    
+    return rows
+
+
+def get_following_timeline(
+    db: Session,
+    current_user_id: int,
+    page: int = 1,
+    size: int = 10
+):
+    following_subquery = db.query(Follow.following_id).filter(
+        Follow.follower_id == current_user_id
+    )
+    
+    query = db.query(
+        StudyRecord, 
+        User.username
+    ).join(
+        User,
+        StudyRecord.user_id == User.id
+    ).filter(
+        StudyRecord.user_id.in_(
+            following_subquery
+        )
+        .order_by(
+            StudyRecord.id.desc()
+        )
+    )
+    
+    total = query.count()
     
     records = query.offset((page - 1) * size).limit(size).all()
     

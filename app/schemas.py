@@ -18,6 +18,14 @@ class UserProfileResponse(BaseModel):
     username: str
     total_hours: int
     study_count: int
+    
+    
+# Follow
+class FollowResponse(BaseModel):
+    id: int 
+    username: str
+    
+    model_config = {"from_attributes": True}
 
 
 # Study Record

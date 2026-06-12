@@ -12,6 +12,14 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
     studies = relationship("StudyRecord", back_populates="user")
+    
+    
+class Follow(Base):
+    __tablename__ = "follows"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    follower_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    following_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
 
 class StudyRecord(Base):

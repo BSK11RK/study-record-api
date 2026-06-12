@@ -10,7 +10,9 @@ from app.schemas import (
     StudyPatch, 
     StudyResponse,
     TimelineResponse,
-    TimelinePageResponse
+    TimelinePageResponse,
+    UserProfileResponse,
+    FollowResponse
 )
 from app.crud import (
     create_record,
@@ -20,7 +22,8 @@ from app.crud import (
     get_subject_summary,
     get_timeline,
     patch_record,
-    delete_record
+    delete_record,
+    get_following_timeline
 )
 
 
@@ -96,6 +99,22 @@ def read_timeline(
         db=db,
         user_id=user_id,
         order=order,
+        page=page,
+        size=size
+    )
+    
+
+# Follow
+@router.get("/timeline/following", response_model=TimelinePageResponse)
+def read_following_timeline(
+    page: int = 1,
+    size: int = 10,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return get_following_timeline(
+        db=db,
+        current_user_id=current_user.id,
         page=page,
         size=size
     )
