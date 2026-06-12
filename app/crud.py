@@ -52,11 +52,25 @@ def get_user_profile(
             StudyRecord.user_id == user_id
         ).count()
         
+    follower_count = db.query(
+        Follow
+    ).filter(
+        Follow.following_id == user_id
+    ).count()
+    
+    following_count = db.query(
+        Follow
+    ).filter(
+        Follow.follower_id == user_id
+    ).count()
+        
     return {
         "id": user.id,
         "username": user.username,
         "total_hours": total_hours or 0,
-        "study_count": study_count
+        "study_count": study_count,
+        "follower_count": follower_count,
+        "following_count": following_count
     }
         
 

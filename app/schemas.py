@@ -18,6 +18,8 @@ class UserProfileResponse(BaseModel):
     username: str
     total_hours: int
     study_count: int
+    follower_count: int
+    following_count: int
     
     
 # Follow
